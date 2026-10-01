@@ -1,0 +1,113 @@
+{
+  "name": "jwcalendar-temporal-engine",
+  "version": "0.1.0",
+  "description": "A deterministic TypeScript engine for civil dates, calendar grids, week systems, Julian conversions, and holiday rules.",
+  "license": "MIT",
+  "homepage": "https://jwcalendar.com/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/karencohenjw/jwcalendar-temporal-engine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/karencohenjw/jwcalendar-temporal-engine/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "src",
+    "dist",
+    "docs/VALIDATION.md",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "bin": {
+    "jwcal": "./dist/cli.js"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js",
+      "require": "./dist/cjs/core.js"
+    },
+    "./grid": {
+      "types": "./dist/grid.d.ts",
+      "import": "./dist/grid.js",
+      "require": "./dist/cjs/grid.js"
+    },
+    "./julian": {
+      "types": "./dist/julian.d.ts",
+      "import": "./dist/julian.js",
+      "require": "./dist/cjs/julian.js"
+    },
+    "./ordinal": {
+      "types": "./dist/ordinal.d.ts",
+      "import": "./dist/ordinal.js",
+      "require": "./dist/cjs/ordinal.js"
+    },
+    "./week": {
+      "types": "./dist/week.d.ts",
+      "import": "./dist/week.js",
+      "require": "./dist/cjs/week.js"
+    },
+    "./holidays": {
+      "types": "./dist/holidays.d.ts",
+      "import": "./dist/holidays.js",
+      "require": "./dist/cjs/holidays.js"
+    },
+    "./analysis": {
+      "types": "./dist/analysis.d.ts",
+      "import": "./dist/analysis.js",
+      "require": "./dist/cjs/analysis.js"
+    },
+    "./export": {
+      "types": "./dist/export.d.ts",
+      "import": "./dist/export.js",
+      "require": "./dist/cjs/export.js"
+    }
+  },
+  "scripts": {
+    "clean": "node -e \"import('node:fs').then(fs=>fs.rmSync('dist',{recursive:true,force:true}))\"",
+    "build": "pnpm clean && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node scripts/build-cjs.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src test scripts",
+    "benchmark": "node benchmarks/run.mjs",
+    "pack:check": "pnpm pack --dry-run"
+  },
+  "keywords": [
+    "calendar",
+    "calendar-grid",
+    "temporal",
+    "civil-date",
+    "gregorian",
+    "julian-calendar",
+    "ordinal-date",
+    "iso-week",
+    "week-number",
+    "holiday-rules",
+    "typescript",
+    "jwcalendar"
+  ],
+  "sideEffects": false,
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "@vitest/coverage-v8": "^5.0.3",
+    "eslint": "^10.11.0",
+    "fast-check": "^4.10.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.3"
+  }
+}
