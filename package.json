@@ -24,7 +24,7 @@
     "CHANGELOG.md"
   ],
   "bin": {
-    "jwcal": "./dist/cli.js"
+    "jwcal": "dist/cli.js"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/index.js",
