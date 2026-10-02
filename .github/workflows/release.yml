@@ -24,6 +24,28 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - name: Validate release versions
+        id: release-version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Git tag must be a semantic version prefixed with v: $GITHUB_REF_NAME" >&2
+            exit 1
+          fi
+          VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION="$(node -p "JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')).version")"
+          CHART_VERSION="$(sed -n 's/^version:[[:space:]]*//p' charts/jwcalendar-temporal-engine/Chart.yaml | head -n 1)"
+          CHART_APP_VERSION="$(sed -n 's/^appVersion:[[:space:]]*//p' charts/jwcalendar-temporal-engine/Chart.yaml | head -n 1 | tr -d '\"')"
+          for entry in "package.json=$PACKAGE_VERSION" "Chart.yaml version=$CHART_VERSION" "Chart.yaml appVersion=$CHART_APP_VERSION" "git tag=$VERSION"; do
+            name="${entry%%=*}"
+            value="${entry#*=}"
+            if [[ "$value" != "$VERSION" ]]; then
+              echo "$name ($value) does not match release version $VERSION" >&2
+              exit 1
+            fi
+          done
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Validate source
@@ -37,14 +59,16 @@ jobs:
         with:
           version: v3.22.0
       - name: Validate and package chart
+        env:
+          VERSION: ${{ steps.release-version.outputs.value }}
         run: |
+          set -euo pipefail
           helm lint charts/jwcalendar-temporal-engine
           helm template temporal-engine charts/jwcalendar-temporal-engine > /tmp/chart-defaults.yaml
+          grep -Fq "ghcr.io/karencohenjw/jwcalendar-temporal-engine:$VERSION" /tmp/chart-defaults.yaml
           mkdir -p dist/charts
           helm package charts/jwcalendar-temporal-engine --destination dist/charts
-      - name: Derive release version
-        id: version
-        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          test -f "dist/charts/jwcalendar-temporal-engine-${VERSION}.tgz"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -61,25 +85,47 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/karencohenjw/jwcalendar-temporal-engine:${{ steps.version.outputs.value }}
+          tags: ghcr.io/karencohenjw/jwcalendar-temporal-engine:${{ steps.release-version.outputs.value }}
+          build-args: |
+            APP_VERSION=${{ steps.release-version.outputs.value }}
       - name: Log in to GHCR for Helm
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: printf '%s' "$GH_TOKEN" | helm registry login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
       - name: Publish OCI Helm chart
-        run: helm push dist/charts/jwcalendar-temporal-engine-0.2.0.tgz oci://ghcr.io/karencohenjw/charts
+        run: helm push "dist/charts/jwcalendar-temporal-engine-${{ steps.release-version.outputs.value }}.tgz" oci://ghcr.io/karencohenjw/charts
+      - name: Verify published OCI chart anonymously
+        env:
+          VERSION: ${{ steps.release-version.outputs.value }}
+        run: |
+          set -euo pipefail
+          VERIFY_HOME="$RUNNER_TEMP/helm-anonymous"
+          mkdir -p "$VERIFY_HOME/cache" "$VERIFY_HOME/config" "$VERIFY_HOME/data" "$RUNNER_TEMP/chart-pull"
+          printf '{"auths":{}}\n' > "$VERIFY_HOME/registry.json"
+          export HELM_REGISTRY_CONFIG="$VERIFY_HOME/registry.json"
+          export HELM_CACHE_HOME="$VERIFY_HOME/cache"
+          export HELM_CONFIG_HOME="$VERIFY_HOME/config"
+          export HELM_DATA_HOME="$VERIFY_HOME/data"
+          CHART="oci://ghcr.io/karencohenjw/charts/jwcalendar-temporal-engine"
+          helm pull "$CHART" --version "$VERSION" --destination "$RUNNER_TEMP/chart-pull"
+          helm show chart "$CHART" --version "$VERSION" > "$RUNNER_TEMP/chart.yaml"
+          helm show readme "$CHART" --version "$VERSION" > "$RUNNER_TEMP/chart-readme.md"
+          helm show values "$CHART" --version "$VERSION" > "$RUNNER_TEMP/chart-values.yaml"
+          grep -Eq "^version: $VERSION$" "$RUNNER_TEMP/chart.yaml"
+          grep -Eq "^appVersion: ['\"]?$VERSION['\"]?$" "$RUNNER_TEMP/chart.yaml"
+          test -s "$RUNNER_TEMP/chart-readme.md"
+          test -s "$RUNNER_TEMP/chart-values.yaml"
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          name: JW Calendar Temporal Engine ${{ github.ref_name }}
+          name: JW Calendar Temporal Engine ${{ steps.release-version.outputs.value }}
           body: |
-            ## JW Calendar Temporal Engine ${{ github.ref_name }}
+            ## JW Calendar Temporal Engine ${{ steps.release-version.outputs.value }}
 
-            This release adds a stateless HTTP API to the deterministic JW Calendar temporal library, along with a production-oriented Kubernetes Helm chart.
+            See the version-specific changes in [CHANGELOG.md](https://github.com/karencohenjw/jwcalendar-temporal-engine/blob/${{ github.ref_name }}/CHANGELOG.md).
 
-            - **API:** Gregorian date metadata, month and year grids, ISO week coordinates, and leap-year information.
-            - **Container:** `ghcr.io/karencohenjw/jwcalendar-temporal-engine:${{ steps.version.outputs.value }}`
-            - **Helm OCI chart:** `oci://ghcr.io/karencohenjw/charts/jwcalendar-temporal-engine --version 0.2.0`
-            - **Artifact Hub:** indexed after repository registration and processing.
+            - **Container:** `ghcr.io/karencohenjw/jwcalendar-temporal-engine:${{ steps.release-version.outputs.value }}`
+            - **Helm OCI chart:** `oci://ghcr.io/karencohenjw/charts/jwcalendar-temporal-engine --version ${{ steps.release-version.outputs.value }}`
+            - **Artifact Hub:** https://artifacthub.io/packages/helm/jwcalendar-temporal-engine/jwcalendar-temporal-engine
 
             Dates are calculated as timezone-free civil values. See the chart README for API examples, configuration, security defaults, and installation details.
