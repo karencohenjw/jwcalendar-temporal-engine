@@ -1,0 +1,49 @@
+apiVersion: v2
+name: jwcalendar-temporal-engine
+description: A stateless date and calendar metadata API for Kubernetes.
+type: application
+version: 0.2.0
+appVersion: "0.2.0"
+kubeVersion: ">=1.25.0-0"
+home: https://jwcalendar.com/
+sources:
+  - https://github.com/karencohenjw/jwcalendar-temporal-engine
+maintainers:
+  - name: Karen Cohen
+keywords:
+  - calendar
+  - temporal
+  - date
+  - kubernetes
+  - helm
+  - iso-week
+  - gregorian
+  - julian-calendar
+  - julian-day-number
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/links: |
+    - name: Official Website
+      url: https://jwcalendar.com/
+    - name: Documentation
+      url: https://github.com/karencohenjw/jwcalendar-temporal-engine#jw-calendar-temporal-engine
+    - name: Source
+      url: https://github.com/karencohenjw/jwcalendar-temporal-engine
+    - name: Support
+      url: https://github.com/karencohenjw/jwcalendar-temporal-engine/issues
+    - name: Calendar Resources
+      url: https://jwcalendar.com/yearly-calendar/
+    - name: Blank Calendar
+      url: https://jwcalendar.com/blank-calendar/
+    - name: Julian Day Number Reference
+      url: https://jwcalendar.com/julian-calendar/
+  artifacthub.io/changes: |
+    - kind: added
+      description: Added a stateless HTTP API for date metadata, calendar grids, ISO weeks, and leap years.
+    - kind: added
+      description: Added a Kubernetes Helm chart and OCI release workflow.
+    - kind: added
+      description: Added a non-root container image with health checks.
+  artifacthub.io/images: |
+    - name: jwcalendar-temporal-engine
+      image: ghcr.io/karencohenjw/jwcalendar-temporal-engine:0.2.0
