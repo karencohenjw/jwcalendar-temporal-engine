@@ -43,7 +43,7 @@ The chart is published as an OCI artifact:
 ```sh
 helm install temporal-engine \
   oci://ghcr.io/karencohenjw/charts/jwcalendar-temporal-engine \
-  --version 0.2.0
+  --version 0.2.1
 ```
 
 To expose the API with an Ingress, set a hostname and optionally a TLS secret:
@@ -51,7 +51,7 @@ To expose the API with an Ingress, set a hostname and optionally a TLS secret:
 ```sh
 helm install temporal-engine \
   oci://ghcr.io/karencohenjw/charts/jwcalendar-temporal-engine \
-  --version 0.2.0 \
+  --version 0.2.1 \
   --set ingress.enabled=true \
   --set ingress.hosts[0].host=calendar-api.example.com
 ```
@@ -78,7 +78,7 @@ The default service is `ClusterIP` on port 8080 with two replicas. Ingress is di
 | `nodeSelector`, `tolerations`, `affinity` | empty | Scheduling constraints |
 | `topologySpreadConstraints` | `[]` | Optional pod topology rules |
 
-Use `helm show values oci://ghcr.io/karencohenjw/charts/jwcalendar-temporal-engine --version 0.2.0` for the complete values file. `values.schema.json` validates common inputs during Helm operations.
+Use `helm show values oci://ghcr.io/karencohenjw/charts/jwcalendar-temporal-engine --version 0.2.1` for the complete values file. `values.schema.json` validates common inputs during Helm operations.
 
 ## Kubernetes configuration
 
@@ -106,7 +106,9 @@ JW Calendar publishes printable and human-readable planning references. These re
 - [2027 yearly calendar reference](https://jwcalendar.com/yearly-calendar/)
 - [Reusable blank calendar reference](https://jwcalendar.com/blank-calendar/)
 - [Julian date and day-number reference](https://jwcalendar.com/julian-calendar/)
-- [Source, issues, and project documentation](https://github.com/karencohenjw/jwcalendar-temporal-engine)
+- [Source repository](https://github.com/karencohenjw/jwcalendar-temporal-engine)
+- [Report an issue](https://github.com/karencohenjw/jwcalendar-temporal-engine/issues)
+- [API and chart documentation](https://github.com/karencohenjw/jwcalendar-temporal-engine#jw-calendar-temporal-engine)
 
 ## License
 
