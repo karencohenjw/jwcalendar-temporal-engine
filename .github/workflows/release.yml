@@ -1,0 +1,85 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Validate source
+        run: |
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm build
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.22.0
+      - name: Validate and package chart
+        run: |
+          helm lint charts/jwcalendar-temporal-engine
+          helm template temporal-engine charts/jwcalendar-temporal-engine > /tmp/chart-defaults.yaml
+          mkdir -p dist/charts
+          helm package charts/jwcalendar-temporal-engine --destination dist/charts
+      - name: Derive release version
+        id: version
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish container image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/karencohenjw/jwcalendar-temporal-engine:${{ steps.version.outputs.value }}
+      - name: Log in to GHCR for Helm
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$GH_TOKEN" | helm registry login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Publish OCI Helm chart
+        run: helm push dist/charts/jwcalendar-temporal-engine-0.2.0.tgz oci://ghcr.io/karencohenjw/charts
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: JW Calendar Temporal Engine ${{ github.ref_name }}
+          body: |
+            ## JW Calendar Temporal Engine ${{ github.ref_name }}
+
+            This release adds a stateless HTTP API to the deterministic JW Calendar temporal library, along with a production-oriented Kubernetes Helm chart.
+
+            - **API:** Gregorian date metadata, month and year grids, ISO week coordinates, and leap-year information.
+            - **Container:** `ghcr.io/karencohenjw/jwcalendar-temporal-engine:${{ steps.version.outputs.value }}`
+            - **Helm OCI chart:** `oci://ghcr.io/karencohenjw/charts/jwcalendar-temporal-engine --version 0.2.0`
+            - **Artifact Hub:** indexed after repository registration and processing.
+
+            Dates are calculated as timezone-free civil values. See the chart README for API examples, configuration, security defaults, and installation details.
