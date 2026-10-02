@@ -156,6 +156,20 @@ jwcal equivalent-years 2027 --from 1900 --to 2100
 
 All public result structures contain numbers, strings, arrays, and plain objects and are JSON-safe. `calendarToJSON`, `monthGridToCSV`, and `holidaysToCSV` provide serialization helpers. CSV output uses CRLF line endings and RFC 4180-style quoting. ICS output is intentionally not provided.
 
+## HTTP API and Kubernetes
+
+The repository also builds a stateless HTTP API that exposes date metadata, month and year grids, ISO week coordinates, and Gregorian leap-year information. It calculates date-only values without converting them to timestamps, so the server's timezone does not change the result. See the [API and Helm chart guide](charts/jwcalendar-temporal-engine/README.md) for routes, response formats, security defaults, and Kubernetes installation.
+
+Build and run the service locally:
+
+```sh
+pnpm build
+APP_VERSION=0.2.0 node dist/server-entry.js
+curl http://localhost:8080/v1/date/2027-01-01
+```
+
+The container is published at `ghcr.io/karencohenjw/jwcalendar-temporal-engine`; the Helm chart is published as an OCI artifact at `oci://ghcr.io/karencohenjw/charts/jwcalendar-temporal-engine`.
+
 ## Runtime and module exports
 
 The package has no runtime dependencies. ESM, CommonJS `require`, and TypeScript declarations are published. The root export and focused subpaths are available:

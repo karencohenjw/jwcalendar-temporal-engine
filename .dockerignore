@@ -1,0 +1,16 @@
+.git
+.github
+node_modules
+coverage
+dist
+*.tgz
+.env
+.env.*
+README.md
+CONTRIBUTING.md
+SECURITY.md
+CHANGELOG.md
+charts
+benchmarks
+work
+outputs
