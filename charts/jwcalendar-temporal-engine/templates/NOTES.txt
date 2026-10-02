@@ -1,0 +1,12 @@
+JW Calendar Temporal Engine is available inside the cluster at:
+
+  http://{{ include "jwcalendar-temporal-engine.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+Check service health:
+
+  kubectl run --rm -it temporal-engine-client --restart=Never --image=curlimages/curl:8.10.1 -- \
+    curl -fsS http://{{ include "jwcalendar-temporal-engine.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}/health
+
+Example date metadata request:
+
+  curl -fsS http://{{ include "jwcalendar-temporal-engine.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}/v1/date/2027-01-01
