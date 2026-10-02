@@ -27,7 +27,7 @@ describe("temporal HTTP API", () => {
   it("reports service health and version", async () => {
     const { response, body } = await getJson("/health");
     expect(response.status).toBe(200);
-    expect(body).toMatchObject({ status: "ok", service: "jwcalendar-temporal-engine", version: "0.2.0" });
+    expect(body).toMatchObject({ status: "ok", service: "jwcalendar-temporal-engine", version: process.env["APP_VERSION"] ?? "development" });
   });
 
   it("returns date metadata without timestamp conversion", async () => {
