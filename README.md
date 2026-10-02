@@ -164,7 +164,7 @@ Build and run the service locally:
 
 ```sh
 pnpm build
-APP_VERSION=0.2.0 node dist/server-entry.js
+APP_VERSION=0.2.1 node dist/server-entry.js
 curl http://localhost:8080/v1/date/2027-01-01
 ```
 

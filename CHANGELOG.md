@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-10-02
+
+- Fixed the release workflow to validate package, chart, and tag versions and derive published chart names from the tag.
+- Added anonymous Helm OCI pull and chart metadata smoke checks to the release workflow.
+- Added accurate amd64 and arm64 container platform metadata and normalized Artifact Hub source and support links.
+
 ## 0.2.0 — 2026-10-02
 
 - Added a stateless HTTP API for date metadata, month and year grids, ISO weeks, and leap years.

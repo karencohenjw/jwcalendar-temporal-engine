@@ -8,8 +8,9 @@ COPY . .
 RUN pnpm build
 
 FROM node:22-alpine AS runtime
+ARG APP_VERSION=development
 ENV NODE_ENV=production \
-    APP_VERSION=0.2.0 \
+    APP_VERSION=${APP_VERSION} \
     HOST=0.0.0.0 \
     PORT=8080
 WORKDIR /app

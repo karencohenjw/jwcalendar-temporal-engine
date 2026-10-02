@@ -1,6 +1,6 @@
 {
   "name": "jwcalendar-temporal-engine",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A deterministic TypeScript engine for civil dates, calendar grids, week systems, Julian conversions, and holiday rules.",
   "license": "MIT",
   "homepage": "https://jwcalendar.com/",
