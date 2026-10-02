@@ -4,7 +4,7 @@ import { dayOfYear } from "./ordinal.js";
 import { toISOWeekDate } from "./week.js";
 
 const SERVICE_NAME = "jwcalendar-temporal-engine";
-const VERSION = process.env["APP_VERSION"] ?? "0.2.0";
+const VERSION = process.env["APP_VERSION"] ?? "development";
 const MONTH_NAMES = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] as const;
 const DAY_NAMES = ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
 
